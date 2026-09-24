@@ -1,0 +1,25 @@
+---
+interface Props {
+  kicker?: string;
+  title: string;
+  aside?: string;
+  id?: string;
+  level?: 'h1' | 'h2';
+}
+
+const { kicker, title, aside, id, level = 'h2' } = Astro.props;
+const Heading = level;
+---
+
+<header class="section-head">
+  <div class="rule rule--rust" data-reveal-rule aria-hidden="true"></div>
+  <div class="section-head__row" data-reveal>
+    <Heading class="section-head__title" id={id}>{title}</Heading>
+    {aside && <span class="kicker">{aside}</span>}
+  </div>
+  <div class="section-head__row" data-reveal>
+    {kicker && <span class="kicker kicker--rust">{kicker}</span>}
+    <slot />
+  </div>
+  <div class="rule rule--rust" data-reveal-rule aria-hidden="true"></div>
+</header>

@@ -1,0 +1,152 @@
+---
+import Stamp from '../newspaper/Stamp.astro';
+import type { LabItem } from '../../lib/types';
+
+interface Props {
+  items: LabItem[];
+}
+
+const { items } = Astro.props;
+---
+
+<section class="lab section" id="lab" aria-labelledby="lab-title" data-horizontal>
+  <div class="sheet lab__head">
+    <div class="rule rule--rust" data-reveal-rule aria-hidden="true"></div>
+    <div class="lab__head-row" data-reveal>
+      <h2 class="section-head__title" id="lab-title">From the Lab</h2>
+      <Stamp label="Experimental" tone="ink" rotate={-2} />
+    </div>
+    <p class="kicker lab__hint" data-reveal>Side projects &amp; curiosities — scroll to leaf through</p>
+  </div>
+  <div class="lab__viewport">
+    <ol class="lab__track" role="list" data-horizontal-track>
+      {
+        items.map((item, i) => (
+          <li class="lab__item">
+            <article class="lab__card" data-reveal>
+              <p class="lab__no">{String(i + 1).padStart(2, '0')}</p>
+              <h3 class="lab__title">
+                {item.url ? (
+                  <a href={item.url} target="_blank" rel="noopener noreferrer">
+                    {item.title}
+                  </a>
+                ) : (
+                  item.title
+                )}
+              </h3>
+              {item.note && <p class="lab__note">{item.note}</p>}
+              <p class="kicker lab__foot">Lab note · {String(i + 1).padStart(3, '0')}</p>
+            </article>
+          </li>
+        ))
+      }
+    </ol>
+  </div>
+</section>
+
+<style>
+  .lab {
+    overflow: clip;
+  }
+
+  .lab__head {
+    display: grid;
+    gap: 10px;
+    margin-bottom: clamp(24px, 3vw, 40px);
+  }
+
+  .lab__head-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  .lab__viewport {
+    width: min(100% - var(--gutter) * 2, var(--sheet));
+    margin-inline: auto;
+    overflow: clip;
+    border-top: var(--rule);
+    border-bottom: var(--rule);
+  }
+
+  .lab__track {
+    display: flex;
+    gap: 0;
+    padding: 0;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: thin;
+    scrollbar-color: var(--rust) transparent;
+    overscroll-behavior-x: contain;
+  }
+
+  .lab.is-pinned .lab__track {
+    overflow: visible;
+    will-change: transform;
+  }
+
+  .lab__item {
+    flex: 0 0 min(78vw, 360px);
+    scroll-snap-align: start;
+    border-right: var(--rule-faint);
+  }
+
+  .lab__item:last-child {
+    border-right: 0;
+  }
+
+  .lab__card {
+    display: grid;
+    grid-template-rows: auto 1fr auto auto;
+    gap: 14px;
+    height: 100%;
+    min-height: 300px;
+    padding: 26px 24px 22px;
+    transition: background-color 0.5s var(--ease-paper);
+  }
+
+  .lab__card:hover {
+    background-color: rgba(229, 219, 193, 0.5);
+  }
+
+  .lab__no {
+    font-family: var(--font-display);
+    font-size: clamp(3.4rem, 6vw, 5rem);
+    line-height: 0.8;
+    color: var(--rust);
+    opacity: 0.9;
+  }
+
+  .lab__title {
+    align-self: end;
+    font-size: clamp(1.6rem, 2.6vw, 2.2rem);
+    text-transform: uppercase;
+  }
+
+  .lab__title a {
+    text-decoration: none;
+  }
+
+  .lab__note {
+    color: var(--ink-muted);
+    font-size: 0.95rem;
+  }
+
+  .lab__foot {
+    padding-top: 10px;
+    border-top: var(--rule-faint);
+  }
+
+  @media (min-width: 1024px) {
+    .lab__item {
+      flex-basis: 380px;
+    }
+
+    .lab__card {
+      min-height: 380px;
+      padding: 32px 30px 26px;
+    }
+  }
+</style>

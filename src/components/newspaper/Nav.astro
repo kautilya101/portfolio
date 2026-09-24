@@ -1,0 +1,153 @@
+---
+export interface NavItem {
+  label: string;
+  href: string;
+}
+
+interface Props {
+  items: NavItem[];
+  initials: string;
+}
+
+const { items, initials } = Astro.props;
+const path = Astro.url.pathname.replace(/\/$/, '') || '/';
+
+function isActive(href: string) {
+  if (href.includes('#')) return false;
+  if (href === '/') return path === '/';
+  return path === href || path.startsWith(`${href}/`);
+}
+---
+
+<nav class="nav" aria-label="Primary">
+  <div class="sheet nav__inner">
+    <a href="/" class="nav__mark" aria-label="Home">{initials}</a>
+    <ol class="nav__list" role="list">
+      {
+        items.map((item, i) => (
+          <li>
+            <a href={item.href} class="nav__link" aria-current={isActive(item.href) ? 'page' : undefined}>
+              <span class="nav__num">{String(i + 1).padStart(2, '0')}</span>
+              <span class="nav__label">{item.label}</span>
+            </a>
+          </li>
+        ))
+      }
+    </ol>
+  </div>
+</nav>
+
+<style>
+  .nav {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background: var(--paper);
+    box-shadow: 0 6px 12px -10px rgba(33, 31, 26, 0.35);
+    border-bottom: var(--rule);
+  }
+
+  .nav__inner {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    min-height: 52px;
+  }
+
+  .nav__mark {
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 34px;
+    height: 34px;
+    font-family: var(--font-display);
+    font-size: 1rem;
+    text-decoration: none;
+    color: var(--paper-light);
+    background: var(--ink);
+    border: 1px solid var(--ink);
+    outline: 1px solid var(--rust);
+    outline-offset: 2px;
+  }
+
+  .nav__list {
+    display: flex;
+    gap: clamp(14px, 3vw, 44px);
+    margin-inline: auto;
+    overflow-x: auto;
+    scrollbar-width: none;
+    padding: 0;
+  }
+
+  .nav__list::-webkit-scrollbar {
+    display: none;
+  }
+
+  .nav__link {
+    position: relative;
+    display: inline-flex;
+    align-items: baseline;
+    gap: 0.5em;
+    padding: 14px 0;
+    font-family: var(--font-mono);
+    font-size: 0.74rem;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    text-decoration: none;
+    white-space: nowrap;
+  }
+
+  .nav__num {
+    color: var(--rust);
+    font-size: 0.66rem;
+  }
+
+  .nav__label {
+    position: relative;
+  }
+
+  .nav__label::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -3px;
+    height: 1px;
+    background: var(--rust);
+    scale: 0 1;
+    transform-origin: 0 50%;
+    transition: scale 0.4s var(--ease-out);
+  }
+
+  .nav__link:hover .nav__label::after,
+  .nav__link[aria-current='page'] .nav__label::after {
+    scale: 1 1;
+  }
+
+  @media (max-width: 767px) {
+    .nav__inner {
+      gap: 14px;
+      min-height: 46px;
+    }
+
+    .nav__mark {
+      width: 28px;
+      height: 28px;
+      font-size: 0.85rem;
+    }
+
+    .nav__list {
+      margin-inline: 0;
+      gap: 18px;
+      mask-image: linear-gradient(90deg, #000 85%, transparent);
+      -webkit-mask-image: linear-gradient(90deg, #000 85%, transparent);
+      padding-right: 24px;
+    }
+
+    .nav__link {
+      padding: 12px 0;
+      font-size: 0.68rem;
+    }
+  }
+</style>

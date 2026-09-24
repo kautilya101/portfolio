@@ -1,0 +1,100 @@
+---
+import Caption from './Caption.astro';
+import Plate, { type PlateVariant } from './Plate.astro';
+import { hasImage, imageDimensions, imageSrcSet, imageUrl } from '../../lib/sanity';
+import type { SanityImage } from '../../lib/types';
+
+interface Props {
+  image?: SanityImage | null;
+  alt?: string;
+  fig?: string;
+  caption?: string;
+  ratio?: number;
+  sizes?: string;
+  priority?: boolean;
+  tilt?: 'l' | 'r' | null;
+  reveal?: boolean;
+  parallax?: boolean;
+  placeholder?: PlateVariant;
+  class?: string;
+  load?: number;
+}
+
+const {
+  image,
+  alt,
+  fig,
+  caption,
+  ratio: forcedRatio,
+  sizes = '(min-width: 900px) 50vw, 100vw',
+  priority = false,
+  tilt = null,
+  reveal = true,
+  parallax = true,
+  placeholder = 'browser',
+  class: className,
+  load
+} = Astro.props;
+
+const present = hasImage(image);
+const dims = present ? imageDimensions(image, forcedRatio ?? 4 / 3) : null;
+const ratio = forcedRatio ?? dims?.ratio ?? (placeholder === 'portrait' ? 4 / 5 : 4 / 3);
+const lqip = present ? image.asset?.metadata?.lqip : undefined;
+const width = 1200;
+const height = Math.round(width / ratio);
+const src = present ? imageUrl(image, width, forcedRatio ? height : undefined) : '';
+const srcset = present ? imageSrcSet(image, forcedRatio) : '';
+const altText = alt ?? image?.alt ?? caption ?? '';
+const captionText = caption ?? image?.caption;
+---
+
+<figure
+  class:list={['figure', tilt && `figure--tilt-${tilt}`, className]}
+  data-reveal-img={reveal && load === undefined ? '' : undefined}
+  data-load={load !== undefined ? 'plate' : undefined}
+  style={load !== undefined ? `--i:${load}` : undefined}
+>
+  <div
+    class="figure__frame halftone"
+    style={`aspect-ratio:${ratio.toFixed(4)};${lqip ? `background-image:url(${lqip});background-size:cover;` : ''}`}
+  >
+    {
+      present ? (
+        <img
+          src={src}
+          srcset={srcset}
+          sizes={sizes}
+          width={width}
+          height={height}
+          alt={altText}
+          loading={priority ? 'eager' : 'lazy'}
+          decoding={priority ? 'sync' : 'async'}
+          fetchpriority={priority ? 'high' : 'auto'}
+          class:list={['figure__img', parallax && 'figure__img--parallax']}
+          data-parallax={parallax ? '0.8' : undefined}
+          data-parallax-mobile="off"
+        />
+      ) : (
+        <div class:list={['figure__plate', parallax && 'figure__img--parallax']} data-parallax={parallax ? '0.8' : undefined} data-parallax-mobile="off">
+          <Plate variant={placeholder} label={altText || undefined} />
+        </div>
+      )
+    }
+  </div>
+  <Caption fig={fig} text={captionText} />
+</figure>
+
+<style>
+  .figure__img--parallax {
+    position: absolute;
+    left: 0;
+    top: -20px;
+    width: 100%;
+    height: calc(100% + 40px);
+  }
+
+  .figure__plate {
+    width: 100%;
+    height: 100%;
+  }
+</style>

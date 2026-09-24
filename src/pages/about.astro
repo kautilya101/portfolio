@@ -1,0 +1,17 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import About from '../components/sections/About.astro';
+import Stack from '../components/sections/Stack.astro';
+import Contact from '../components/sections/Contact.astro';
+import { getEdition } from '../lib/content';
+import { plainText } from '../lib/sanity';
+
+const { site, show } = await getEdition();
+if (!show.about) return Astro.redirect('/');
+---
+
+<BaseLayout title="About" description={plainText(site.bio).slice(0, 160)} compact>
+  <About site={site} full />
+  {show.stack && <Stack site={site} showAdvert={false} />}
+  {show.contact && <Contact site={site} />}
+</BaseLayout>

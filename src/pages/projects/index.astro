@@ -1,0 +1,14 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Projects from '../../components/sections/Projects.astro';
+import Contact from '../../components/sections/Contact.astro';
+import { getEdition } from '../../lib/content';
+
+const { site, show, projects } = await getEdition();
+if (!show.projects) return Astro.redirect('/');
+---
+
+<BaseLayout title="Work" description={`Selected projects by ${site.name}, presented as stories from the technology desk.`} compact>
+  <Projects projects={projects} full />
+  {show.contact && <Contact site={site} />}
+</BaseLayout>

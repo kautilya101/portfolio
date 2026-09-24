@@ -1,0 +1,139 @@
+---
+import { formatPeriod } from '../../lib/content';
+import type { Experience } from '../../lib/types';
+
+interface Props {
+  item: Experience;
+  index: number;
+  detailed?: boolean;
+}
+
+const { item, index, detailed = false } = Astro.props;
+const period = formatPeriod(item.startDate, item.endDate);
+const current = !item.endDate;
+const achievements = detailed ? item.achievements : item.achievements.slice(0, 2);
+---
+
+<article class="xp" data-reveal>
+  <div class="xp__rail">
+    <p class="xp__period meta">{period}</p>
+    <p class="xp__no kicker">File {String(index + 1).padStart(3, '0')}</p>
+    {current && <p class="xp__now kicker kicker--rust">● Current post</p>}
+    {item.location && <p class="xp__loc kicker">{item.location}</p>}
+  </div>
+  <div class="xp__body">
+    <h3 class="xp__company display display--md">{item.company}</h3>
+    <p class="xp__role kicker kicker--rust">{item.role}</p>
+    {item.description && <p class="xp__desc lede">{item.description}</p>}
+    {
+      item.surfaces.length > 0 && (
+        <ul class="tag-list xp__surfaces" role="list" aria-label="Surfaces">
+          {item.surfaces.map((s) => (
+            <li class="tag">{s}</li>
+          ))}
+        </ul>
+      )
+    }
+    {
+      achievements.length > 0 && (
+        <ul class="xp__achievements" role="list">
+          {achievements.map((a) => (
+            <li>{a}</li>
+          ))}
+        </ul>
+      )
+    }
+    {
+      item.technologies.length > 0 && (
+        <ul class="dot-list xp__tech" role="list" aria-label="Technologies">
+          {item.technologies.map((t) => (
+            <li>{t}</li>
+          ))}
+        </ul>
+      )
+    }
+  </div>
+</article>
+
+<style>
+  .xp {
+    display: grid;
+    gap: 14px 28px;
+    grid-template-columns: minmax(0, 1fr);
+    padding: clamp(24px, 3vw, 36px) 0;
+    border-top: var(--rule);
+  }
+
+  .xp__rail {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 16px;
+    align-content: start;
+  }
+
+  .xp__period {
+    font-weight: 500;
+    color: var(--ink);
+    width: 100%;
+  }
+
+  .xp__company {
+    transition: color 0.4s var(--ease-paper);
+  }
+
+  .xp:hover .xp__company {
+    color: var(--rust-dark);
+  }
+
+  .xp__role {
+    margin-top: 10px;
+    font-size: 0.78rem;
+  }
+
+  .xp__desc {
+    margin-top: 16px;
+    max-width: 52ch;
+  }
+
+  .xp__surfaces {
+    margin-top: 18px;
+  }
+
+  .xp__achievements {
+    display: grid;
+    gap: 8px;
+    margin-top: 18px;
+    padding: 0;
+    max-width: 60ch;
+    font-size: 0.95rem;
+    color: var(--ink-muted);
+  }
+
+  .xp__achievements li {
+    position: relative;
+    padding-left: 22px;
+  }
+
+  .xp__achievements li::before {
+    content: '§';
+    position: absolute;
+    left: 0;
+    color: var(--rust);
+    font-family: var(--font-display);
+  }
+
+  .xp__tech {
+    margin-top: 18px;
+  }
+
+  @media (min-width: 700px) {
+    .xp {
+      grid-template-columns: 160px minmax(0, 1fr);
+    }
+
+    .xp__rail {
+      flex-direction: column;
+      flex-wrap: nowrap;
+    }
+  }
+</style>

@@ -1,0 +1,61 @@
+---
+interface Props {
+  as?: 'div' | 'aside' | 'section' | 'article';
+  hatched?: boolean;
+  class?: string;
+  label?: string;
+}
+
+const { as: Tag = 'div', hatched = false, class: className, label } = Astro.props;
+---
+
+<Tag class:list={['np-border', hatched && 'np-border--hatched', className]} aria-label={label}>
+  <span class="np-border__corner np-border__corner--tl" aria-hidden="true"></span>
+  <span class="np-border__corner np-border__corner--tr" aria-hidden="true"></span>
+  <span class="np-border__corner np-border__corner--bl" aria-hidden="true"></span>
+  <span class="np-border__corner np-border__corner--br" aria-hidden="true"></span>
+  <slot />
+</Tag>
+
+<style>
+  .np-border {
+    position: relative;
+    padding: clamp(20px, 2.6vw, 32px);
+    border: 1px solid var(--ink);
+    outline: 3px double var(--ink);
+    outline-offset: 5px;
+    background: rgba(229, 219, 193, 0.35);
+  }
+
+  .np-border--hatched {
+    background-image: var(--hatch);
+  }
+
+  .np-border__corner {
+    position: absolute;
+    width: 9px;
+    height: 9px;
+    background: var(--rust);
+    rotate: 45deg;
+  }
+
+  .np-border__corner--tl {
+    top: -5px;
+    left: -5px;
+  }
+
+  .np-border__corner--tr {
+    top: -5px;
+    right: -5px;
+  }
+
+  .np-border__corner--bl {
+    bottom: -5px;
+    left: -5px;
+  }
+
+  .np-border__corner--br {
+    bottom: -5px;
+    right: -5px;
+  }
+</style>

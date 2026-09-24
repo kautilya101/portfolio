@@ -1,0 +1,66 @@
+---
+import ArticleHeader from '../newspaper/ArticleHeader.astro';
+import ExperienceItem from '../experience/ExperienceItem.astro';
+import WebMobileVisual from '../experience/WebMobileVisual.astro';
+import type { Experience } from '../../lib/types';
+
+interface Props {
+  experience: Experience[];
+  full?: boolean;
+}
+
+const { experience, full = false } = Astro.props;
+---
+
+<section class="section sheet" id="experience" aria-labelledby="experience-title">
+  <ArticleHeader title="Experience" kicker="Career archive / From browser to pocket" aside="Section B" id="experience-title" level={full ? 'h1' : 'h2'} />
+  <div class="grid xp-grid">
+    <div class="xp-grid__list">
+      {experience.map((item, index) => <ExperienceItem item={item} index={index} detailed={full} />)}
+      {
+        !full && (
+          <a href="/experience" class="press-link xp-grid__more" data-reveal>
+            <span>Full career archive</span>
+          </a>
+        )
+      }
+    </div>
+    <aside class="xp-grid__visual col-rule">
+      <div class="xp-grid__sticky">
+        <WebMobileVisual experience={experience} />
+      </div>
+    </aside>
+  </div>
+</section>
+
+<style>
+  .xp-grid__more {
+    margin-top: 12px;
+  }
+
+  .xp-grid__visual {
+    margin-top: 24px;
+  }
+
+  @media (min-width: 900px) {
+    .xp-grid__list {
+      grid-column: 1 / span 8;
+    }
+
+    .xp-grid__visual {
+      grid-column: 9 / span 4;
+      margin-top: 0;
+    }
+
+    .xp-grid__sticky {
+      position: sticky;
+      top: 84px;
+    }
+  }
+
+  @media (min-width: 640px) and (max-width: 899px) {
+    .xp-grid__sticky {
+      max-width: 440px;
+    }
+  }
+</style>

@@ -1,0 +1,22 @@
+{
+  "name": "the-engineering-post-studio",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "sanity dev",
+    "build": "sanity build",
+    "deploy": "sanity deploy",
+    "seed": "sanity dataset import seed/content.ndjson production --missing"
+  },
+  "dependencies": {
+    "@sanity/vision": "^6.16.0",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "sanity": "^6.16.0",
+    "styled-components": "^6.1.18"
+  },
+  "devDependencies": {
+    "typescript": "^5.8.3"
+  }
+}

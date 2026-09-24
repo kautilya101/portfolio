@@ -1,0 +1,88 @@
+---
+import ArticleHeader from '../newspaper/ArticleHeader.astro';
+import Stamp from '../newspaper/Stamp.astro';
+import { richTextToHtml } from '../../lib/sanity';
+import type { Site } from '../../lib/types';
+
+interface Props {
+  site: Site;
+  full?: boolean;
+}
+
+const { site, full = false } = Astro.props;
+const html = richTextToHtml(site.bio);
+const notes = [site.location, site.yearsExperience, site.focus].filter(Boolean);
+---
+
+<section class="section sheet about" id="about" aria-labelledby="about-title">
+  <ArticleHeader title="About the Engineer" kicker="Profile / Feature" aside="Page A2" id="about-title" level={full ? 'h1' : 'h2'} />
+  <div class="grid about__grid">
+    <div class="about__lead" data-reveal>
+      <p class="dek">{site.heroIntro}</p>
+      <p class="about__byline kicker">By the editor · {site.name}</p>
+    </div>
+    <div class="about__body col-rule columns-host">
+      <div class="body-copy body-copy--columns drop-cap" data-reveal set:html={html} />
+      {
+        !full && (
+          <a href="/about" class="press-link about__more" data-reveal>
+            <span>Continue reading</span>
+          </a>
+        )
+      }
+    </div>
+    <aside class="about__notes col-rule" aria-label="At a glance" data-reveal>
+      <p class="kicker kicker--rust">At a glance</p>
+      <ul class="side-notes" role="list">
+        {notes.map((note) => <li>{note}</li>)}
+      </ul>
+      <div class="about__stamp">
+        <Stamp label="Verified" tone="olive" rotate={-6} />
+      </div>
+      <p class="about__annotation hand">— frontend first, full stack always.</p>
+    </aside>
+  </div>
+</section>
+
+<style>
+  .about__lead .dek {
+    font-size: clamp(1.5rem, 2.6vw, 2.1rem);
+    line-height: 1.08;
+  }
+
+  .about__byline {
+    margin-top: 18px;
+  }
+
+  .about__more {
+    margin-top: 18px;
+  }
+
+  .about__notes {
+    display: grid;
+    gap: 16px;
+    align-content: start;
+  }
+
+  .about__stamp {
+    padding: 12px 0 0 6px;
+  }
+
+  .about__annotation {
+    font-size: 1.15rem;
+  }
+
+  @media (min-width: 900px) {
+    .about__lead {
+      grid-column: 1 / span 3;
+    }
+
+    .about__body {
+      grid-column: 4 / span 6;
+    }
+
+    .about__notes {
+      grid-column: 10 / span 3;
+    }
+  }
+</style>

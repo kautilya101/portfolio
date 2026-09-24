@@ -1,0 +1,14 @@
+---
+interface Props {
+  label: string;
+  tone?: 'rust' | 'ink' | 'olive';
+  rotate?: number;
+  class?: string;
+}
+
+const { label, tone = 'rust', rotate = -3, class: className } = Astro.props;
+---
+
+<span class:list={['stamp', tone !== 'rust' && `stamp--${tone}`, className]} style={`--stamp-rotate:${rotate}deg`}>
+  {label}
+</span>

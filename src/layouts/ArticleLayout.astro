@@ -1,0 +1,127 @@
+---
+import BaseLayout from './BaseLayout.astro';
+import Stamp from '../components/newspaper/Stamp.astro';
+
+export interface ArticleMeta {
+  label: string;
+  value: string;
+  href?: string;
+}
+
+interface Props {
+  title: string;
+  description?: string;
+  ogImage?: string;
+  label: string;
+  kicker?: string;
+  headline?: string;
+  dek?: string;
+  meta?: ArticleMeta[];
+}
+
+const { title, description, ogImage, label, kicker, headline, dek, meta = [] } = Astro.props;
+---
+
+<BaseLayout title={title} description={description} ogImage={ogImage} compact>
+  <article class="article">
+    <header class="article__header sheet">
+      <div class="article__label" data-load style="--i:2">
+        <Stamp label={label} rotate={-2} />
+        {kicker && <span class="kicker kicker--rust">{kicker}</span>}
+      </div>
+      <h1 class="article__title display display--xl" data-lines>
+        <span class="line-mask"><span style="--l:0">{title}</span></span>
+      </h1>
+      {headline && <p class="article__headline dek" data-load style="--i:4">{headline}</p>}
+      <div class="rule rule--rust" data-load="rule" style="--i:4" aria-hidden="true"></div>
+      <div class="article__intro" data-load style="--i:5">
+        {dek && <p class="lede article__dek">{dek}</p>}
+        {
+          meta.length > 0 && (
+            <dl class="article__meta">
+              {meta.map((item) => (
+                <div>
+                  <dt class="kicker">{item.label}</dt>
+                  <dd class="meta">
+                    {item.href ? (
+                      <a href={item.href} target="_blank" rel="noopener noreferrer">
+                        {item.value}
+                      </a>
+                    ) : (
+                      item.value
+                    )}
+                  </dd>
+                </div>
+              ))}
+            </dl>
+          )
+        }
+      </div>
+    </header>
+    <slot />
+  </article>
+</BaseLayout>
+
+<style>
+  .article__header {
+    display: grid;
+    gap: 18px;
+    padding-top: clamp(32px, 5vw, 64px);
+  }
+
+  .article__label {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    flex-wrap: wrap;
+  }
+
+  .article__title {
+    font-size: clamp(3.2rem, 13vw, 10rem);
+    overflow-wrap: anywhere;
+  }
+
+  .article__headline {
+    max-width: 26ch;
+    font-size: clamp(1.4rem, 3vw, 2.3rem);
+    line-height: 1.05;
+  }
+
+  .article__intro {
+    display: grid;
+    gap: 28px;
+  }
+
+  .article__dek {
+    max-width: 52ch;
+  }
+
+  .article__meta {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    margin: 0;
+    border-top: var(--rule);
+  }
+
+  .article__meta > div {
+    padding: 12px 12px 12px 0;
+    border-bottom: var(--rule-faint);
+  }
+
+  .article__meta dd {
+    margin: 4px 0 0;
+    font-weight: 500;
+  }
+
+  .article__meta a {
+    text-decoration-color: var(--rust);
+  }
+
+  @media (min-width: 900px) {
+    .article__intro {
+      grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+      gap: var(--col-gap);
+      align-items: start;
+    }
+  }
+</style>

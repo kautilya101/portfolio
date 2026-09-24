@@ -1,0 +1,56 @@
+---
+import type { Site } from '../../lib/types';
+
+interface Props {
+  site: Site;
+}
+
+const { site } = Astro.props;
+const year = new Date().getFullYear();
+---
+
+<footer class="site-footer">
+  <div class="sheet">
+    <div class="rule rule--double" aria-hidden="true"></div>
+    <div class="site-footer__inner">
+      <p class="site-footer__title">{site.publication}</p>
+      <p class="meta site-footer__vol">Vol. {year} · {site.name}</p>
+      <p class="meta site-footer__colophon">Set in DM Serif Display &amp; IBM Plex. Printed with Astro, edited in Sanity.</p>
+      <a href="#top" class="press-link site-footer__top"><span>Back to front page</span></a>
+    </div>
+  </div>
+</footer>
+
+<style>
+  .site-footer {
+    padding: clamp(48px, 7vw, 96px) 0 32px;
+  }
+
+  .site-footer__inner {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 10px;
+    padding-top: 22px;
+    text-align: center;
+    justify-items: center;
+  }
+
+  .site-footer__title {
+    font-family: var(--font-display);
+    font-size: clamp(1.8rem, 4vw, 2.8rem);
+    line-height: 1;
+  }
+
+  .site-footer__vol {
+    color: var(--rust);
+  }
+
+  .site-footer__colophon {
+    font-size: 0.66rem;
+    color: var(--ink-muted);
+  }
+
+  .site-footer__top {
+    margin-top: 8px;
+  }
+</style>

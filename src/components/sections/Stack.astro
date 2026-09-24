@@ -1,0 +1,152 @@
+---
+import ArticleHeader from '../newspaper/ArticleHeader.astro';
+import NewspaperBorder from '../newspaper/NewspaperBorder.astro';
+import Stamp from '../newspaper/Stamp.astro';
+import type { Site } from '../../lib/types';
+
+interface Props {
+  site: Site;
+  showAdvert?: boolean;
+}
+
+const { site, showAdvert = true } = Astro.props;
+---
+
+<section class="section sheet" id="stack" aria-labelledby="stack-title">
+  <ArticleHeader title="Tools of the Trade" kicker="Index / Instruments in daily use" aside="Section D" id="stack-title" />
+  <div class="grid stack-grid">
+    <dl class="stack-index">
+      {
+        site.stack.map((group, i) => (
+          <div class="stack-index__row" data-reveal>
+            <dt class="kicker kicker--rust">
+              <span class="stack-index__no">{String(i + 1).padStart(2, '0')}</span> {group.label}
+            </dt>
+            <dd>{group.items.join(' · ')}</dd>
+          </div>
+        ))
+      }
+    </dl>
+    {
+      showAdvert && (
+        <div class="stack-grid__ad col-rule" data-reveal>
+          <NewspaperBorder as="aside" label="Advertisement" hatched>
+            <p class="kicker ad__label">Advertisement</p>
+            <p class="ad__title display display--sm">Wanted:</p>
+            <p class="ad__headline">Interesting problems &amp; ambitious products.</p>
+            <ul class="ad__list" role="list">
+              <li>Interfaces that must feel instant</li>
+              <li>Apps that live on web &amp; mobile</li>
+              <li>Systems that need a steady hand</li>
+            </ul>
+            <div class="ad__foot">
+              {site.email ? <a href={`mailto:${site.email}`} class="press-link"><span>Inquire within</span></a> : <span class="kicker">Inquire within</span>}
+              <Stamp label="Classified" rotate={4} />
+            </div>
+          </NewspaperBorder>
+        </div>
+      )
+    }
+  </div>
+</section>
+
+<style>
+  .stack-index {
+    display: grid;
+    margin: 0;
+  }
+
+  .stack-index__row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 4px 24px;
+    padding: 16px 0;
+    border-bottom: var(--rule-faint);
+  }
+
+  .stack-index__row:first-child {
+    border-top: var(--rule);
+  }
+
+  .stack-index__no {
+    color: var(--ink-muted);
+    margin-right: 6px;
+  }
+
+  .stack-index dd {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: clamp(1.25rem, 2.3vw, 1.8rem);
+    line-height: 1.15;
+  }
+
+  .ad__label {
+    text-align: center;
+    border-bottom: var(--rule);
+    padding-bottom: 8px;
+    margin-bottom: 14px;
+  }
+
+  .ad__title {
+    text-align: center;
+    color: var(--rust);
+  }
+
+  .ad__headline {
+    margin: 8px 0 16px;
+    text-align: center;
+    font-family: var(--font-display);
+    font-size: 1.35rem;
+    line-height: 1.15;
+  }
+
+  .ad__list {
+    display: grid;
+    gap: 6px;
+    padding: 0;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .ad__list li::before {
+    content: '✦ ';
+    color: var(--rust);
+  }
+
+  .ad__foot {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 20px;
+    padding-top: 12px;
+    border-top: var(--rule-faint);
+  }
+
+  @media (min-width: 700px) {
+    .stack-index__row {
+      grid-template-columns: 180px minmax(0, 1fr);
+      align-items: baseline;
+    }
+  }
+
+  @media (min-width: 900px) {
+    .stack-index {
+      grid-column: 1 / span 7;
+    }
+
+    .stack-grid__ad {
+      grid-column: 9 / span 4;
+    }
+  }
+
+  @media (max-width: 899px) {
+    .stack-grid__ad {
+      margin-top: 24px;
+      max-width: 460px;
+    }
+  }
+</style>

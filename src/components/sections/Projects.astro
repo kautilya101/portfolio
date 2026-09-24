@@ -1,0 +1,100 @@
+---
+import ArticleHeader from '../newspaper/ArticleHeader.astro';
+import ProjectStory from '../projects/ProjectStory.astro';
+import type { Project } from '../../lib/types';
+
+interface Props {
+  projects: Project[];
+  limit?: number;
+  full?: boolean;
+}
+
+const { projects, limit, full = false } = Astro.props;
+const list = limit ? projects.slice(0, limit) : projects;
+const [lead, ...rest] = list;
+const hasMore = projects.length > list.length;
+---
+
+<section class="section sheet" id="projects" aria-labelledby="projects-title">
+  <ArticleHeader title={full ? 'The Stories' : 'Selected Work'} kicker="Technology desk / Field reports" aside="Section C" id="projects-title" level={full ? 'h1' : 'h2'} />
+  {lead && <ProjectStory project={lead} index={0} variant="lead" />}
+  {
+    rest.length > 0 && (
+      <div class="stories">
+        {rest.map((project, i) => (
+          <div class="stories__cell">
+            <ProjectStory project={project} index={i + 1} />
+          </div>
+        ))}
+      </div>
+    )
+  }
+  {
+    !full && (
+      <div class="stories__more" data-reveal>
+        <span class="kicker">{hasMore ? `${projects.length - list.length} more in the archive` : 'The full archive'}</span>
+        <a href="/projects" class="press-link"><span>All stories</span></a>
+      </div>
+    )
+  }
+</section>
+
+<style>
+  .stories {
+    display: grid;
+    gap: 48px var(--col-gap);
+    grid-template-columns: minmax(0, 1fr);
+    margin-top: clamp(40px, 6vw, 72px);
+    padding-top: clamp(28px, 4vw, 44px);
+    border-top: 3px double var(--ink);
+  }
+
+  .stories__cell {
+    position: relative;
+  }
+
+  .stories__more {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-top: clamp(32px, 5vw, 56px);
+    padding-top: 14px;
+    border-top: var(--rule);
+  }
+
+  @media (min-width: 700px) {
+    .stories {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .stories__cell:nth-child(2n)::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: calc(var(--col-gap) / -2);
+      border-left: var(--rule-faint);
+    }
+  }
+
+  @media (min-width: 1100px) {
+    .stories {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .stories__cell:nth-child(2n)::before {
+      content: none;
+    }
+
+    .stories__cell:not(:nth-child(3n + 1))::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: calc(var(--col-gap) / -2);
+      border-left: var(--rule-faint);
+    }
+  }
+</style>

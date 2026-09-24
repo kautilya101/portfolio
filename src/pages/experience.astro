@@ -1,0 +1,16 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Experience from '../components/sections/Experience.astro';
+import Stack from '../components/sections/Stack.astro';
+import Contact from '../components/sections/Contact.astro';
+import { getEdition } from '../lib/content';
+
+const { site, show, experience } = await getEdition();
+if (!show.experience) return Astro.redirect('/');
+---
+
+<BaseLayout title="Experience" description={`Career archive of ${site.name}: roles across web, mobile and backend systems.`} compact>
+  <Experience experience={experience} full />
+  {show.stack && <Stack site={site} showAdvert={false} />}
+  {show.contact && <Contact site={site} />}
+</BaseLayout>

@@ -1,0 +1,149 @@
+---
+import ProjectFigure from './ProjectFigure.astro';
+import { pad } from '../../lib/content';
+import type { Project } from '../../lib/types';
+
+interface Props {
+  project: Project;
+  index: number;
+  variant?: 'lead' | 'column';
+  headingLevel?: 'h2' | 'h3';
+}
+
+const { project, index, variant = 'column', headingLevel = 'h3' } = Astro.props;
+const Heading = headingLevel;
+const href = `/projects/${project.slug}`;
+const kicker = `${project.category ?? 'Technology'} / ${pad(index + 1)}`;
+const tilt = variant === 'lead' ? null : index % 3 === 1 ? 'l' : index % 3 === 2 ? 'r' : null;
+---
+
+<article class:list={['story', `story--${variant}`]}>
+  <div class="story__figure">
+    <a href={href} class="story__figure-link" tabindex="-1" aria-hidden="true">
+      <ProjectFigure
+        project={project}
+        index={index}
+        fig={index + 3}
+        tilt={tilt}
+        sizes={variant === 'lead' ? '(min-width: 900px) 56vw, 100vw' : '(min-width: 900px) 30vw, 100vw'}
+      />
+    </a>
+  </div>
+  <div class="story__text" data-reveal>
+    <p class="kicker kicker--rust">{kicker}{project.year && <span class="story__year"> · {project.year}</span>}</p>
+    <Heading class="story__title display">
+      <a href={href}>{project.title}</a>
+    </Heading>
+    <div class="rule" aria-hidden="true"></div>
+    {project.headline && <p class="story__headline dek">{project.headline}</p>}
+    <p class="story__desc">{project.description}</p>
+    {
+      project.technologies.length > 0 && (
+        <ul class="tech-stack story__tech" role="list" aria-label="Technologies">
+          {project.technologies.map((t) => (
+            <li>{t}</li>
+          ))}
+        </ul>
+      )
+    }
+    <a href={href} class="press-link story__cta" aria-label={`Read the story: ${project.title}`}>
+      <span>Read story</span>
+    </a>
+  </div>
+</article>
+
+<style>
+  .story {
+    display: grid;
+    gap: 22px;
+    align-content: start;
+  }
+
+  .story__figure-link {
+    display: block;
+    text-decoration: none;
+  }
+
+  .story__figure :global(.figure) {
+    transition: translate 0.6s var(--ease-out);
+  }
+
+  .story:hover .story__figure :global(.figure) {
+    translate: 0 -4px;
+  }
+
+  .story__text {
+    display: grid;
+    gap: 12px;
+    align-content: start;
+  }
+
+  .story__year {
+    color: var(--ink-muted);
+  }
+
+  .story__title {
+    font-size: clamp(2.2rem, 4.2vw, 3.4rem);
+  }
+
+  .story__title a {
+    text-decoration: none;
+    background-image: linear-gradient(var(--rust), var(--rust));
+    background-size: 0% 2px;
+    background-repeat: no-repeat;
+    background-position: 0 92%;
+    transition: background-size 0.6s var(--ease-out);
+  }
+
+  .story__title a:hover,
+  .story:hover .story__title a {
+    background-size: 100% 2px;
+  }
+
+  .story__headline {
+    font-size: clamp(1.15rem, 1.8vw, 1.45rem);
+  }
+
+  .story__desc {
+    color: var(--ink-muted);
+    max-width: 48ch;
+  }
+
+  .story__tech {
+    margin-top: 4px;
+  }
+
+  .story__cta {
+    justify-self: start;
+  }
+
+  @media (min-width: 900px) {
+    .story--lead {
+      grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+      gap: var(--col-gap);
+      align-items: start;
+    }
+
+    .story--lead .story__title {
+      font-size: clamp(3rem, 5.6vw, 5.2rem);
+    }
+
+    .story--lead .story__headline {
+      font-size: clamp(1.4rem, 2.2vw, 1.9rem);
+    }
+
+    .story--lead .story__text {
+      position: relative;
+      padding-top: 6px;
+    }
+
+    .story--lead .story__text::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: calc(var(--col-gap) / -2);
+      border-left: var(--rule-faint);
+    }
+  }
+</style>

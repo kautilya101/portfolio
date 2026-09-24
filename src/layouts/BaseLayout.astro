@@ -1,0 +1,108 @@
+---
+import '@fontsource/dm-serif-display/latin-400.css';
+import '@fontsource/dm-serif-display/latin-400-italic.css';
+import '@fontsource/ibm-plex-sans/latin-400.css';
+import '@fontsource/ibm-plex-sans/latin-400-italic.css';
+import '@fontsource/ibm-plex-sans/latin-500.css';
+import '@fontsource/ibm-plex-mono/latin-400.css';
+import '@fontsource/ibm-plex-mono/latin-500.css';
+import '../styles/global.css';
+import '../styles/typography.css';
+import '../styles/newspaper.css';
+import '../styles/animations.css';
+
+import displayFont from '@fontsource/dm-serif-display/files/dm-serif-display-latin-400-normal.woff2?url';
+import bodyFont from '@fontsource/ibm-plex-sans/files/ibm-plex-sans-latin-400-normal.woff2?url';
+
+import Masthead from '../components/newspaper/Masthead.astro';
+import Nav, { type NavItem } from '../components/newspaper/Nav.astro';
+import Footer from '../components/newspaper/Footer.astro';
+import { getEdition } from '../lib/content';
+import { hasImage, imageUrl } from '../lib/sanity';
+
+interface Props {
+  title?: string;
+  description?: string;
+  compact?: boolean;
+  ogImage?: string;
+}
+
+const { site, show } = await getEdition();
+const { title, description, compact = false, ogImage } = Astro.props;
+
+const pageTitle = title ? `${title} — ${site.publication}` : `${site.name} — ${site.role} · ${site.publication}`;
+const pageDescription = description || site.description || site.heroIntro;
+const canonical = new URL(Astro.url.pathname, Astro.site);
+const socialImage = ogImage ?? (hasImage(site.portrait) ? imageUrl(site.portrait, 1200, 630) : undefined);
+
+const navItems: NavItem[] = [
+  { label: 'Home', href: '/' },
+  ...(show.projects ? [{ label: 'Work', href: '/projects' }] : []),
+  ...(show.experience ? [{ label: 'Experience', href: '/experience' }] : []),
+  ...(show.about ? [{ label: 'About', href: '/about' }] : []),
+  ...(show.contact ? [{ label: 'Contact', href: '/#contact' }] : [])
+];
+
+const initials = site.name
+  .split(/\s+/)
+  .map((part) => part[0])
+  .join('')
+  .slice(0, 2)
+  .toUpperCase();
+---
+
+<!doctype html>
+<html lang="en" id="top">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#D8CCAD" />
+    <meta name="color-scheme" content="light" />
+    <title>{pageTitle}</title>
+    <meta name="description" content={pageDescription} />
+    <link rel="canonical" href={canonical} />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="sitemap" href="/sitemap-index.xml" />
+    <link rel="preload" href={displayFont} as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href={bodyFont} as="font" type="font/woff2" crossorigin />
+    <link rel="preconnect" href="https://cdn.sanity.io" crossorigin />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={pageDescription} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:site_name" content={site.publication} />
+    {socialImage && <meta property="og:image" content={socialImage} />}
+    <meta name="twitter:card" content={socialImage ? 'summary_large_image' : 'summary'} />
+    <script is:inline>
+      (function () {
+        var d = document.documentElement;
+        if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+          d.classList.add('motion');
+          setTimeout(function () {
+            if (!d.classList.contains('motion-ready')) d.classList.remove('motion');
+          }, 4000);
+        }
+      })();
+    </script>
+  </head>
+  <body>
+    <a href="#main" class="skip-link">Skip to content</a>
+    <div class="paper-stains" aria-hidden="true">
+      <div class="paper-stains__layer" data-parallax="0.1" data-parallax-root></div>
+      <span class="paper-stains__ring paper-stains__ring--a" data-parallax="0.2"></span>
+      <span class="paper-stains__ring paper-stains__ring--b" data-parallax="0.2"></span>
+    </div>
+    <header class="site-header">
+      <Masthead site={site} compact={compact} />
+    </header>
+    <Nav items={navItems} initials={initials} />
+    <main id="main" tabindex="-1">
+      <slot />
+    </main>
+    <Footer site={site} />
+    <div class="paper-grain" aria-hidden="true"></div>
+    <script>
+      import '../components/animations/motion';
+    </script>
+  </body>
+</html>

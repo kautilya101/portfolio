@@ -1,0 +1,18 @@
+---
+interface Props {
+  fig?: string;
+  text?: string;
+}
+
+const { fig, text } = Astro.props;
+---
+
+{
+  (fig || text) && (
+    <figcaption class="figure__caption">
+      {fig && <b>{fig}</b>}
+      {fig && text && <span aria-hidden="true">—</span>}
+      {text && <span>{text}</span>}
+    </figcaption>
+  )
+}

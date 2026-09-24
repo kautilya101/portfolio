@@ -1,0 +1,30 @@
+---
+import Figure from '../newspaper/Figure.astro';
+import type { PlateVariant } from '../newspaper/Plate.astro';
+import type { Project } from '../../lib/types';
+
+interface Props {
+  project: Project;
+  index: number;
+  fig: number;
+  sizes?: string;
+  priority?: boolean;
+  tilt?: 'l' | 'r' | null;
+}
+
+const { project, index, fig, sizes, priority = false, tilt = null } = Astro.props;
+const variants: PlateVariant[] = ['browser', 'board', 'phone', 'terminal'];
+const caption = project.coverImage?.caption ?? `${project.headline ?? project.title} interface`;
+---
+
+<Figure
+  image={project.coverImage}
+  alt={project.coverImage?.alt ?? `${project.title} screenshot`}
+  fig={`Fig. ${String(fig).padStart(2, '0')}`}
+  caption={caption}
+  ratio={16 / 11}
+  sizes={sizes}
+  priority={priority}
+  tilt={tilt}
+  placeholder={variants[index % variants.length]}
+/>

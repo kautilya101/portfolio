@@ -1,0 +1,399 @@
+---
+import ArticleLayout, { type ArticleMeta } from '../../layouts/ArticleLayout.astro';
+import Figure from '../../components/newspaper/Figure.astro';
+import ProjectFigure from '../../components/projects/ProjectFigure.astro';
+import Stamp from '../../components/newspaper/Stamp.astro';
+import { getEdition, pad } from '../../lib/content';
+import { hasImage, imageUrl, richTextToHtml } from '../../lib/sanity';
+import type { Project } from '../../lib/types';
+
+export async function getStaticPaths() {
+  const { projects, show } = await getEdition();
+  if (!show.projects) return [];
+  return projects.map((project, index) => ({
+    params: { slug: project.slug },
+    props: {
+      project,
+      index,
+      prev: projects[index - 1] ?? null,
+      next: projects[index + 1] ?? null
+    }
+  }));
+}
+
+interface Props {
+  project: Project;
+  index: number;
+  prev: Project | null;
+  next: Project | null;
+}
+
+const { project, index, prev, next } = Astro.props;
+
+const meta: ArticleMeta[] = [
+  project.year && { label: 'Filed', value: project.year },
+  project.role && { label: 'Role', value: project.role },
+  project.github && { label: 'Source', value: 'GitHub', href: project.github },
+  project.liveUrl && { label: 'Edition', value: 'Live site', href: project.liveUrl }
+].filter(Boolean) as ArticleMeta[];
+
+const gallery = project.gallery.filter((g) => hasImage(g));
+const [inlineA, inlineB, ...interfaceShots] = gallery;
+
+const chapters = [
+  { id: 'problem', title: 'The Problem', html: richTextToHtml(project.problem) },
+  { id: 'approach', title: 'The Approach', html: richTextToHtml(project.approach) },
+  { id: 'system', title: 'The System', html: richTextToHtml(project.implementation) }
+].filter((c) => c.html);
+
+const hasInterface = interfaceShots.length > 0;
+const lessons = richTextToHtml(project.lessons);
+const toc = [
+  ...chapters.map((c) => ({ id: c.id, title: c.title })),
+  ...(hasInterface ? [{ id: 'interface', title: 'The Interface' }] : []),
+  ...(project.results.length ? [{ id: 'built', title: 'What I Built' }] : []),
+  ...(lessons ? [{ id: 'lessons', title: 'Lessons' }] : [])
+];
+
+const ogImage = hasImage(project.coverImage) ? imageUrl(project.coverImage, 1200, 630) : undefined;
+let fig = 4;
+---
+
+<ArticleLayout
+  title={project.title}
+  description={project.description}
+  ogImage={ogImage}
+  label="Technology Special Report"
+  kicker={`${project.category ?? 'Technology'} / ${pad(index + 1)}`}
+  headline={project.headline}
+  dek={project.description}
+  meta={meta}
+>
+  <div class="sheet report__cover">
+    <ProjectFigure project={project} index={index} fig={3} priority sizes="(min-width: 1320px) 1240px, 100vw" />
+  </div>
+
+  <div class="sheet report grid">
+    <aside class="report__side">
+      <div class="report__side-inner">
+        {
+          toc.length > 0 && (
+            <nav aria-label="In this report" class="report__toc">
+              <p class="kicker kicker--rust">In this report</p>
+              <ol role="list">
+                {toc.map((item, i) => (
+                  <li>
+                    <a href={`#${item.id}`}>
+                      <span class="report__toc-no">{String(i + 1).padStart(2, '0')}</span>
+                      {item.title}
+                    </a>
+                  </li>
+                ))}
+              </ol>
+            </nav>
+          )
+        }
+        {
+          project.technologies.length > 0 && (
+            <div class="report__facts">
+              <p class="kicker kicker--rust">Instruments</p>
+              <ul class="tech-stack" role="list">
+                {project.technologies.map((t) => (
+                  <li>{t}</li>
+                ))}
+              </ul>
+            </div>
+          )
+        }
+        <Stamp label="Archive copy" tone="ink" rotate={-4} />
+      </div>
+    </aside>
+
+    <div class="report__body col-rule">
+      {
+        chapters.map((chapter, i) => (
+          <>
+            <section class="report__chapter" id={chapter.id} aria-labelledby={`${chapter.id}-h`}>
+              <h2 class="report__h display" id={`${chapter.id}-h`} data-reveal>
+                {chapter.title}
+              </h2>
+              <div class:list={['body-copy', i === 0 && 'drop-cap']} data-reveal set:html={chapter.html} />
+            </section>
+            {i === 0 && inlineA && (
+              <div class="report__plate">
+                <Figure image={inlineA} fig={`Fig. ${String(fig++).padStart(2, '0')}`} sizes="(min-width: 900px) 60vw, 100vw" tilt="l" />
+              </div>
+            )}
+            {i === 1 && inlineB && (
+              <div class="report__plate">
+                <Figure image={inlineB} fig={`Fig. ${String(fig++).padStart(2, '0')}`} sizes="(min-width: 900px) 60vw, 100vw" tilt="r" />
+              </div>
+            )}
+          </>
+        ))
+      }
+
+      {
+        hasInterface && (
+          <section class="report__chapter" id="interface" aria-labelledby="interface-h">
+            <h2 class="report__h display" id="interface-h" data-reveal>
+              The Interface
+            </h2>
+            <div class="report__gallery">
+              {interfaceShots.map((shot) => (
+                <Figure image={shot} fig={`Fig. ${String(fig++).padStart(2, '0')}`} sizes="(min-width: 900px) 30vw, 100vw" />
+              ))}
+            </div>
+          </section>
+        )
+      }
+
+      {
+        project.results.length > 0 && (
+          <section class="report__chapter" id="built" aria-labelledby="built-h">
+            <h2 class="report__h display" id="built-h" data-reveal>
+              What I Built
+            </h2>
+            <ol class="report__results" role="list">
+              {project.results.map((r, i) => (
+                <li data-reveal>
+                  <span class="report__results-no">{String(i + 1).padStart(2, '0')}</span>
+                  <span>{r}</span>
+                </li>
+              ))}
+            </ol>
+          </section>
+        )
+      }
+
+      {
+        lessons && (
+          <section class="report__chapter report__lessons" id="lessons" aria-labelledby="lessons-h">
+            <h2 class="report__h display" id="lessons-h" data-reveal>
+              Lessons
+            </h2>
+            <blockquote class="report__quote" data-reveal set:html={lessons} />
+          </section>
+        )
+      }
+    </div>
+  </div>
+
+  <nav class="sheet report__pager" aria-label="More stories">
+    <div class="rule rule--double" aria-hidden="true"></div>
+    <div class="report__pager-row">
+      {
+        prev ? (
+          <a href={`/projects/${prev.slug}`} class="report__pager-link">
+            <span class="kicker">← Previous story</span>
+            <span class="report__pager-title">{prev.title}</span>
+          </a>
+        ) : (
+          <a href="/projects" class="report__pager-link">
+            <span class="kicker">← Archive</span>
+            <span class="report__pager-title">All stories</span>
+          </a>
+        )
+      }
+      {
+        next ? (
+          <a href={`/projects/${next.slug}`} class="report__pager-link report__pager-link--next">
+            <span class="kicker">Next story →</span>
+            <span class="report__pager-title">{next.title}</span>
+          </a>
+        ) : (
+          <a href="/projects" class="report__pager-link report__pager-link--next">
+            <span class="kicker">Archive →</span>
+            <span class="report__pager-title">All stories</span>
+          </a>
+        )
+      }
+    </div>
+  </nav>
+</ArticleLayout>
+
+<style>
+  .report__cover {
+    margin-top: clamp(36px, 5vw, 64px);
+  }
+
+  .report {
+    margin-top: clamp(48px, 7vw, 96px);
+  }
+
+  .report__side-inner {
+    display: grid;
+    gap: 28px;
+    align-content: start;
+    justify-items: start;
+  }
+
+  .report__toc {
+    width: 100%;
+  }
+
+  .report__toc ol {
+    margin-top: 10px;
+    padding: 0;
+    border-top: var(--rule);
+  }
+
+  .report__toc a {
+    display: flex;
+    gap: 10px;
+    padding: 9px 0;
+    border-bottom: var(--rule-faint);
+    font-size: 0.92rem;
+    text-decoration: none;
+    transition: color 0.3s var(--ease-paper);
+  }
+
+  .report__toc a:hover {
+    color: var(--rust);
+  }
+
+  .report__toc-no {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    color: var(--rust);
+    padding-top: 0.2em;
+  }
+
+  .report__facts {
+    display: grid;
+    gap: 10px;
+    width: 100%;
+  }
+
+  .report__body {
+    display: grid;
+    gap: clamp(40px, 5vw, 64px);
+    max-width: 760px;
+  }
+
+  .report__chapter {
+    display: grid;
+    gap: 16px;
+    scroll-margin-top: 80px;
+  }
+
+  .report__h {
+    font-size: clamp(1.9rem, 3.4vw, 2.8rem);
+    text-transform: uppercase;
+    padding-bottom: 10px;
+    border-bottom: var(--rule);
+  }
+
+  .report__body .body-copy {
+    font-size: 1.06rem;
+  }
+
+  .report__plate {
+    margin-inline: calc(var(--col-gap) * -0.5);
+  }
+
+  .report__gallery {
+    display: grid;
+    gap: 36px;
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .report__results {
+    display: grid;
+    padding: 0;
+  }
+
+  .report__results li {
+    display: grid;
+    grid-template-columns: 48px minmax(0, 1fr);
+    gap: 12px;
+    padding: 14px 0;
+    border-bottom: var(--rule-faint);
+    font-family: var(--font-display);
+    font-size: 1.35rem;
+    line-height: 1.2;
+  }
+
+  .report__results-no {
+    font-family: var(--font-mono);
+    font-size: 0.76rem;
+    color: var(--rust);
+    padding-top: 0.4em;
+  }
+
+  .report__quote {
+    margin: 0;
+    padding: 8px 0 8px 24px;
+    border-left: 3px solid var(--rust);
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: clamp(1.35rem, 2.4vw, 1.9rem);
+    line-height: 1.25;
+  }
+
+  .report__pager {
+    margin-top: clamp(64px, 8vw, 112px);
+  }
+
+  .report__pager-row {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--col-gap);
+    padding-top: 18px;
+  }
+
+  .report__pager-link {
+    display: grid;
+    gap: 6px;
+    text-decoration: none;
+  }
+
+  .report__pager-link--next {
+    text-align: right;
+    justify-items: end;
+  }
+
+  .report__pager-title {
+    font-family: var(--font-display);
+    font-size: clamp(1.5rem, 3.6vw, 2.8rem);
+    line-height: 1;
+    text-transform: uppercase;
+    transition: color 0.35s var(--ease-paper);
+  }
+
+  .report__pager-link:hover .report__pager-title {
+    color: var(--rust);
+  }
+
+  @media (min-width: 700px) {
+    .report__gallery {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (min-width: 900px) {
+    .report__side {
+      grid-column: 1 / span 3;
+    }
+
+    .report__side-inner {
+      position: sticky;
+      top: 84px;
+    }
+
+    .report__body {
+      grid-column: 4 / span 8;
+    }
+
+    .report__plate {
+      margin-inline: 0 -12%;
+    }
+  }
+
+  @media (max-width: 899px) {
+    .report__side-inner {
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      width: 100%;
+    }
+  }
+</style>

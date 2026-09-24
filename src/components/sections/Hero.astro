@@ -1,0 +1,305 @@
+---
+import Figure from '../newspaper/Figure.astro';
+import Stamp from '../newspaper/Stamp.astro';
+import type { Edition } from '../../lib/content';
+
+interface Props {
+  edition: Edition;
+}
+
+const { site, show, projects, experience } = Astro.props.edition;
+const headline = site.heroHeadline.length ? site.heroHeadline : [site.role];
+const roleWords = site.role.split(/\s+/);
+
+const contents = [
+  show.about && { label: 'About the engineer', href: '#about', page: 'A2' },
+  show.experience && { label: 'Experience & range', href: '#experience', page: 'B1' },
+  show.projects && { label: `${projects.length} stories from the desk`, href: '#projects', page: 'C1' },
+  show.stack && { label: 'Tools of the trade', href: '#stack', page: 'D1' },
+  show.lab && { label: 'From the lab', href: '#lab', page: 'D4' },
+  show.contact && { label: 'Final edition', href: '#contact', page: 'E1' }
+].filter(Boolean) as { label: string; href: string; page: string }[];
+
+const current = experience.find((e) => !e.endDate) ?? experience[0];
+---
+
+<section class="hero sheet" aria-labelledby="hero-title">
+  <div class="hero__grid">
+    <aside class="hero__index" aria-label="In this edition">
+      <p class="kicker kicker--rust" data-load style="--i:4">In this edition</p>
+      <ol class="hero__contents" role="list" data-load style="--i:5">
+        {
+          contents.map((item) => (
+            <li>
+              <a href={item.href}>
+                <span>{item.label}</span>
+                <span class="hero__leader" aria-hidden="true" />
+                <span class="hero__page">{item.page}</span>
+              </a>
+            </li>
+          ))
+        }
+      </ol>
+      {
+        current && (
+          <div class="hero__dispatch" data-load style="--i:6">
+            <p class="kicker">Latest dispatch</p>
+            <p class="hero__dispatch-title">{current.company}</p>
+            <p class="hero__dispatch-body">{current.role}. {current.description}</p>
+          </div>
+        )
+      }
+      <div class="hero__forecast" data-load style="--i:7">
+        <p class="kicker">Forecast</p>
+        <p>Shipping, with a slight chance of refactors. Winds from the frontend.</p>
+      </div>
+    </aside>
+
+    <div class="hero__main">
+      <div class="hero__stamp" data-load style="--i:2">
+        <Stamp label="Special Edition" rotate={-2.5} />
+      </div>
+      <p class="hero__name kicker" data-load style="--i:2">{site.name}</p>
+      <h2 class="hero__role display display--xl" id="hero-title" data-lines>
+        {
+          roleWords.map((word, i) => (
+            <span class="line-mask">
+              <span style={`--l:${i}`}>{word}</span>
+            </span>
+          ))
+        }
+      </h2>
+      <div class="rule rule--rust hero__rule" data-load="rule" style="--i:4" aria-hidden="true"></div>
+      <p class="hero__dek dek" data-lines>
+        {
+          headline.map((line, i) => (
+            <span class="line-mask">
+              <span style={`--l:${i + roleWords.length}`}>{line}</span>
+            </span>
+          ))
+        }
+      </p>
+      {site.heroIntro && <p class="hero__intro lede" data-load style="--i:5">{site.heroIntro}</p>}
+      <div class="hero__actions" data-load style="--i:6">
+        {show.projects && <a href="#projects" class="press-link press-link--solid"><span>View work</span></a>}
+        {show.contact && <a href="#contact" class="press-link"><span>Contact</span></a>}
+      </div>
+    </div>
+
+    <div class="hero__aside">
+      <Figure
+        image={site.portrait}
+        alt={site.portrait?.alt ?? `Portrait of ${site.name}`}
+        fig="Fig. 01"
+        caption={`${site.role} / Builder`}
+        placeholder="portrait"
+        ratio={4 / 5}
+        sizes="(min-width: 1200px) 300px, (min-width: 900px) 25vw, 60vw"
+        priority
+        parallax={false}
+        load={3}
+        tilt="r"
+      />
+      <ul class="side-notes hero__notes" role="list" data-load style="--i:5">
+        {site.location && <li>{site.location}</li>}
+        {site.yearsExperience && <li>{site.yearsExperience}</li>}
+        {site.focus && <li>{site.focus}</li>}
+      </ul>
+    </div>
+  </div>
+</section>
+
+<style>
+  .hero {
+    padding-top: clamp(24px, 4vw, 48px);
+  }
+
+  .hero__grid {
+    display: grid;
+    gap: 40px;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      'main'
+      'aside'
+      'index';
+  }
+
+  .hero__main {
+    grid-area: main;
+    position: relative;
+  }
+
+  .hero__aside {
+    grid-area: aside;
+    display: grid;
+    gap: 24px;
+    grid-template-columns: minmax(0, 1fr);
+    max-width: 380px;
+  }
+
+  .hero__index {
+    grid-area: index;
+    display: grid;
+    gap: 22px;
+    align-content: start;
+  }
+
+  .hero__stamp {
+    margin-bottom: 18px;
+  }
+
+  .hero__name {
+    margin-bottom: 14px;
+    font-size: 0.8rem;
+    color: var(--ink);
+    letter-spacing: 0.24em;
+  }
+
+  .hero__role {
+    font-size: clamp(3.2rem, 12.5vw, 9rem);
+  }
+
+  .hero__rule {
+    margin: clamp(18px, 2.4vw, 28px) 0;
+  }
+
+  .hero__dek {
+    font-size: clamp(1.45rem, 3.4vw, 2.5rem);
+    line-height: 1.05;
+  }
+
+  .hero__intro {
+    max-width: 34ch;
+    margin-top: clamp(18px, 2.4vw, 28px);
+    color: var(--ink-muted);
+  }
+
+  .hero__actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 14px 22px;
+    margin-top: clamp(24px, 3vw, 36px);
+  }
+
+  .hero__contents {
+    display: grid;
+    border-top: var(--rule);
+    padding: 0;
+  }
+
+  .hero__contents a {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    padding: 11px 0;
+    border-bottom: var(--rule-faint);
+    font-size: 0.92rem;
+    text-decoration: none;
+    transition: color 0.3s var(--ease-paper), padding 0.4s var(--ease-out);
+  }
+
+  .hero__contents a:hover {
+    color: var(--rust);
+    padding-left: 6px;
+  }
+
+  .hero__leader {
+    flex: 1;
+    min-width: 16px;
+    border-bottom: 1px dotted var(--ink-muted);
+    translate: 0 -4px;
+  }
+
+  .hero__page {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    color: var(--rust);
+  }
+
+  .hero__dispatch,
+  .hero__forecast {
+    padding-top: 14px;
+    border-top: var(--rule);
+  }
+
+  .hero__dispatch-title {
+    margin: 8px 0 4px;
+    font-family: var(--font-display);
+    font-size: 1.6rem;
+    line-height: 1;
+    text-transform: uppercase;
+  }
+
+  .hero__dispatch-body,
+  .hero__forecast p:last-child {
+    font-size: 0.9rem;
+    color: var(--ink-muted);
+  }
+
+  .hero__forecast p:last-child {
+    margin-top: 6px;
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: 1.05rem;
+    line-height: 1.3;
+    color: var(--ink);
+  }
+
+  @media (max-width: 639px) {
+    .hero__aside {
+      grid-template-columns: minmax(0, 0.85fr) minmax(0, 1fr);
+      align-items: end;
+      gap: 18px;
+      max-width: none;
+    }
+
+    .hero__notes {
+      font-size: 0.68rem;
+    }
+
+    .hero__forecast {
+      display: none;
+    }
+  }
+
+  @media (min-width: 640px) and (max-width: 1099px) {
+    .hero__grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      grid-template-areas:
+        'main main'
+        'aside index';
+    }
+  }
+
+  @media (min-width: 1100px) {
+    .hero__grid {
+      grid-template-columns: minmax(0, 3fr) minmax(0, 6.2fr) minmax(0, 2.8fr);
+      grid-template-areas: 'index main aside';
+      gap: var(--col-gap);
+    }
+
+    .hero__main,
+    .hero__aside {
+      position: relative;
+    }
+
+    .hero__main::before,
+    .hero__aside::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: calc(var(--col-gap) / -2);
+      border-left: var(--rule-faint);
+    }
+
+    .hero__main {
+      padding-inline: 4px;
+    }
+
+    .hero__role {
+      font-size: clamp(4.6rem, 7.4vw, 8.2rem);
+    }
+  }
+</style>

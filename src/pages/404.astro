@@ -1,0 +1,27 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Stamp from '../components/newspaper/Stamp.astro';
+---
+
+<BaseLayout title="Page not found" compact>
+  <section class="section sheet missing">
+    <Stamp label="Out of print" rotate={-4} />
+    <h1 class="display display--lg missing__title">This page was<br />never printed.</h1>
+    <p class="lede missing__copy">The story you are looking for has been pulled from the archive, or never ran at all.</p>
+    <a href="/" class="press-link press-link--solid"><span>Back to the front page</span></a>
+  </section>
+</BaseLayout>
+
+<style>
+  .missing {
+    display: grid;
+    gap: 24px;
+    justify-items: start;
+    min-height: 50vh;
+  }
+
+  .missing__copy {
+    max-width: 44ch;
+    color: var(--ink-muted);
+  }
+</style>
