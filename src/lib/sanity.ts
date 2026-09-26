@@ -11,7 +11,14 @@ const token = import.meta.env.SANITY_READ_TOKEN as string | undefined;
 export const isSanityConfigured = Boolean(projectId);
 
 export const client: SanityClient | null = projectId
-  ? createClient({ projectId, dataset, apiVersion, useCdn: !token, token, perspective: 'published' })
+  ? createClient({
+      projectId,
+      dataset,
+      apiVersion,
+      token,
+      useCdn: false,
+      perspective: token && import.meta.env.DEV ? 'drafts' : 'published'
+    })
   : null;
 
 const builder = projectId ? createImageUrlBuilder({ projectId, dataset }) : null;

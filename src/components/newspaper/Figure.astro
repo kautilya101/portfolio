@@ -18,6 +18,8 @@ interface Props {
   placeholder?: PlateVariant;
   class?: string;
   load?: number;
+  crop?: boolean;
+  colorHover?: boolean;
 }
 
 const {
@@ -33,30 +35,34 @@ const {
   parallax = true,
   placeholder = 'browser',
   class: className,
-  load
+  load,
+  crop = false,
+  colorHover = false
 } = Astro.props;
 
 const present = hasImage(image);
+const cropRatio = present && crop ? forcedRatio : undefined;
 const dims = present ? imageDimensions(image, forcedRatio ?? 4 / 3) : null;
-const ratio = forcedRatio ?? dims?.ratio ?? (placeholder === 'portrait' ? 4 / 5 : 4 / 3);
+const ratio = present ? (cropRatio ?? dims!.ratio) : (forcedRatio ?? (placeholder === 'portrait' ? 4 / 5 : 4 / 3));
 const lqip = present ? image.asset?.metadata?.lqip : undefined;
 const width = 1200;
 const height = Math.round(width / ratio);
-const src = present ? imageUrl(image, width, forcedRatio ? height : undefined) : '';
-const srcset = present ? imageSrcSet(image, forcedRatio) : '';
+const src = present ? imageUrl(image, width, cropRatio ? height : undefined) : '';
+const srcset = present ? imageSrcSet(image, cropRatio) : '';
+const fitted = present && !cropRatio;
 const altText = alt ?? image?.alt ?? caption ?? '';
 const captionText = caption ?? image?.caption;
 ---
 
 <figure
-  class:list={['figure', tilt && `figure--tilt-${tilt}`, className]}
+  class:list={['figure', tilt && `figure--tilt-${tilt}`, colorHover && 'figure--color-hover', className]}
   data-reveal-img={reveal && load === undefined ? '' : undefined}
   data-load={load !== undefined ? 'plate' : undefined}
   style={load !== undefined ? `--i:${load}` : undefined}
 >
   <div
-    class="figure__frame halftone"
-    style={`aspect-ratio:${ratio.toFixed(4)};${lqip ? `background-image:url(${lqip});background-size:cover;` : ''}`}
+    class:list={['figure__frame', 'halftone', fitted && 'figure__frame--fitted']}
+    style={`aspect-ratio:${ratio.toFixed(4)};${lqip && !fitted ? `background-image:url(${lqip});background-size:cover;` : ''}`}
   >
     {
       present ? (
@@ -70,9 +76,7 @@ const captionText = caption ?? image?.caption;
           loading={priority ? 'eager' : 'lazy'}
           decoding={priority ? 'sync' : 'async'}
           fetchpriority={priority ? 'high' : 'auto'}
-          class:list={['figure__img', parallax && 'figure__img--parallax']}
-          data-parallax={parallax ? '0.8' : undefined}
-          data-parallax-mobile="off"
+          class:list={['figure__img', fitted && 'figure__img--fitted']}
         />
       ) : (
         <div class:list={['figure__plate', parallax && 'figure__img--parallax']} data-parallax={parallax ? '0.8' : undefined} data-parallax-mobile="off">
@@ -91,6 +95,32 @@ const captionText = caption ?? image?.caption;
     top: -20px;
     width: 100%;
     height: calc(100% + 40px);
+  }
+
+  .figure__frame--fitted {
+    max-height: min(82vh, 960px);
+    margin-inline: auto;
+  }
+
+  .figure__img--fitted {
+    object-fit: contain;
+  }
+
+  .figure--color-hover .figure__img {
+    transition:
+      filter 0.7s var(--ease-paper),
+      transform 0.9s var(--ease-out);
+  }
+
+  .figure--color-hover:hover .figure__img,
+  .figure--color-hover:focus-within .figure__img {
+    filter: none;
+    transform: scale(1.05);
+  }
+
+  .figure--color-hover:hover .figure__frame::after,
+  .figure--color-hover:focus-within .figure__frame::after {
+    opacity: 0;
   }
 
   .figure__plate {

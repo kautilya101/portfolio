@@ -9,6 +9,7 @@ const cache = new Map<string, Promise<unknown>>();
 
 function fetchOnce<T>(key: string, query: string): Promise<T | null> {
   if (!client) return Promise.resolve(null);
+  if (import.meta.env.DEV) return client.fetch<T>(query);
   if (!cache.has(key)) cache.set(key, client.fetch<T>(query));
   return cache.get(key) as Promise<T | null>;
 }
